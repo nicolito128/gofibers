@@ -21,9 +21,11 @@ import (
 func main() {
 	// Start a WaitGroup in the main thread
 	wg := &sync.WaitGroup{}
+
 	// Create the new Fiber
-	f := gofibers.New(wg, func(v string, r chan string) {
+	f := gofibers.New(wg, func(v any, r chan any) {
 		fmt.Println("Initial message from the fiber:", v)
+
 		gofibers.Suspend("Suspend 1", wg, r)
 
 		fmt.Println("More code!")
@@ -36,12 +38,9 @@ func main() {
 	}
 
 	res, _ := f.Resume()
-	// Printing the suspend message
-	fmt.Println(res)
+	fmt.Println(res.(string)) // Suspend 1
 
-	fmt.Println("* Message outside the fiber.")
-
-	// The last resume is an empty string
+	// Last handler execution
 	f.Resume()
 }
 ```

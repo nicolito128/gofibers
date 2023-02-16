@@ -9,12 +9,12 @@ var errFiberClosed = errors.New("fiber already closed")
 var errFiberNotStarted = errors.New("fiber not started")
 
 // A Fiber Handler function
-type Handler func(string, chan string)
+type Handler func(any, chan any)
 
 // Fiber represents a form of corroutine handled with an interruptible function.
 type Fiber struct {
 	// Channel to wait the next suspend message
-	lastSuspend chan string
+	lastSuspend chan any
 
 	// If the Fiber is already started
 	started bool
@@ -40,7 +40,7 @@ func (f *Fiber) Close() error {
 }
 
 // Start the Fiber execution. Receive a message that will be passed to the handler function.
-func (f *Fiber) Start(msg string) error {
+func (f *Fiber) Start(msg any) error {
 	if f.closed {
 		return errFiberClosed
 	}
@@ -51,7 +51,7 @@ func (f *Fiber) Start(msg string) error {
 		f.lastSuspend <- msg
 
 		f.handler(msg, f.lastSuspend)
-		Suspend("", f.wg, f.lastSuspend)
+		Suspend(nil, f.wg, f.lastSuspend)
 	}()
 
 	<-f.lastSuspend
@@ -59,26 +59,26 @@ func (f *Fiber) Start(msg string) error {
 }
 
 // Resumes the execution of the handler from the last suspend.
-func (f *Fiber) Resume() (string, error) {
+func (f *Fiber) Resume() (any, error) {
 	if !f.started {
-		return "", errFiberNotStarted
+		return nil, errFiberNotStarted
 	}
 
 	if f.closed {
-		return "", errFiberClosed
+		return nil, errFiberClosed
 	}
-	defer f.wg.Done()
 
+	defer f.wg.Done()
 	return <-f.lastSuspend, nil
 }
 
 // Create a new Fiber.
 func New(w *sync.WaitGroup, f Handler) *Fiber {
-	return &Fiber{handler: f, wg: w, lastSuspend: make(chan string)}
+	return &Fiber{handler: f, wg: w, lastSuspend: make(chan any)}
 }
 
 // Suspend declares an interruption in the execution of the handler.
-func Suspend(val string, wg *sync.WaitGroup, response chan string) {
+func Suspend(val any, wg *sync.WaitGroup, response chan any) {
 	wg.Add(1)
 	response <- val
 	wg.Wait()
