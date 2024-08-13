@@ -1,3 +1,3 @@
 module github.com/nicolito128/gofibers
 
-go 1.20
+go 1.22
