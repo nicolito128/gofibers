@@ -12,9 +12,7 @@ func main() {
 	// Use a fiber handler
 	f.Handle(func(msg any) {
 		fmt.Println("Initial message from the fiber:", msg)
-
 		f.Suspend("Suspend 1")
-
 		fmt.Println("More code!")
 		f.Close()
 	})
